@@ -1,0 +1,28 @@
+node_modules/
+# Distribution / packaging
+*.log
+*.pot
+*.pyc
+__pycache__/
+.Python
+venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+.idea/
+
+# Serverless directories
+.serverless
+.DS_Store
+*.json
+.vscode

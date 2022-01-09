@@ -1,0 +1,12 @@
+altgraph==0.10.2
+appdirs==1.4.4
+asn1crypto==0.24.0
+astroid==1.6.6
+aws-shell==0.2.2
+awscli==1.19.112
+awscli-local==0.17
+boto3==1.17.112
+botocore==1.20.112
+future==0.17.1
+s3transfer==0.4.2
+zipp==1.2.0

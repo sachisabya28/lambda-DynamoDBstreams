@@ -1,0 +1,87 @@
+service: aws-serverless
+
+custom:
+  inputBucket: bucket-awsserverless
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: us-east-1
+  environment:
+    DYNAMODB_TABLE: ${opt:stage, "dev"}-s3data
+  iam:
+    role:
+        statements:
+          - Effect: Allow
+            Action:
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+            Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/*"
+          - Effect: Allow
+            Action:
+              - s3:*
+            Resource: "arn:aws:s3:::${self:custom.inputBucket}/*"
+
+functions:
+  fileupload:
+    handler: lib/auth.fileupload
+    environment:
+      BUCKET_NAME: ${self:custom.inputBucket}
+    events:
+      - http:
+          path: /api/postdata
+          method: post
+          cors: true
+  getupload:
+    handler: lib/auth.getupload
+    environment:
+      BUCKET_NAME: ${self:custom.inputBucket}
+    events:
+      - http:
+          path: /api/getdata
+          method: POST
+          cors: true
+  upload_dynamo:
+    handler: lib/auth.upload_dynamo
+    environment:
+      BUCKET_NAME: ${self:custom.inputBucket}
+    events:
+      - s3:
+          bucket: ${self:custom.inputBucket}
+          event: s3:ObjectCreated:*
+
+resources:
+  Resources:
+    UsersDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: filename
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: filename
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        GlobalSecondaryIndexes:
+          - IndexName: email
+            KeySchema:
+              - AttributeName: filename
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+
+plugins:
+  - serverless-python-requirements
