@@ -20,7 +20,7 @@ Default output format [None]: json
 ###### Installation Guide ######
 
 ```bash
-git clone https://github.com/sachisabya28/awslocalstack.git
+git clone https://github.com/sachisabya28/dynamoapigateway_s3.git
 npm install -g serverless
 sls plugin install -n serverless-python-requirements
 sls deploy 
