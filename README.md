@@ -20,7 +20,7 @@ Default output format [None]: json
 ###### Installation Guide ######
 
 ```bash
-git clone https://github.com/sachisabya28/dynamoapigateway_s3.git
+git clone https://github.com/sachisabya28/lambdastreams.git
 npm install -g serverless
 sls plugin install -n serverless-python-requirements
 sls deploy 
@@ -30,6 +30,13 @@ them again using above commands.**
 
 ```bash
 sls deploy function -f <lambda_function_name> -p <event.json>
+
+setup dynamodbstream on lambda function --> handledynamostream
+
+When insert new insert takes place handledynamostream handles it 
+and insert it into batterydata table. 
+
+so that always the most recent value for the given seral number is available. 
 ```
 ###### Reference ######
 ```bash

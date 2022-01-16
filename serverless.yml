@@ -1,58 +1,51 @@
 service: aws-serverless
 
-custom:
-  inputBucket: bucket-awsserverless
-
 provider:
   name: aws
   runtime: python3.7
   region: us-east-1
   environment:
-    DYNAMODB_TABLE: ${opt:stage, "dev"}-s3data
+    DYNAMODB_TABLE: ${opt:stage, "dev"}-devicedata
+    DYNAMODB_BATTERY_TABLE: ${opt:stage, "dev"}-batterydata
   iam:
     role:
         statements:
           - Effect: Allow
             Action:
-              - dynamodb:Query
-              - dynamodb:Scan
-              - dynamodb:GetItem
-              - dynamodb:PutItem
-              - dynamodb:UpdateItem
-              - dynamodb:DeleteItem
+              - dynamodb:*
             Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/*"
-          - Effect: Allow
-            Action:
-              - s3:*
-            Resource: "arn:aws:s3:::${self:custom.inputBucket}/*"
 
 functions:
-  fileupload:
-    handler: lib/auth.fileupload
+  deviceupload:
+    handler: lib/auth.deviceupload
     environment:
-      BUCKET_NAME: ${self:custom.inputBucket}
+      DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
+      DYNAMODB_BATTERY_TABLE: ${self:provider.environment.DYNAMODB_BATTERY_TABLE}
     events:
       - http:
-          path: /api/postdata
-          method: post
-          cors: true
-  getupload:
-    handler: lib/auth.getupload
-    environment:
-      BUCKET_NAME: ${self:custom.inputBucket}
-    events:
-      - http:
-          path: /api/getdata
+          path: /api/deviceupload
           method: POST
           cors: true
-  upload_dynamo:
-    handler: lib/auth.upload_dynamo
+  getdevicestate:
+    handler: lib/auth.getdevicestate
     environment:
-      BUCKET_NAME: ${self:custom.inputBucket}
+      DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_BATTERY_TABLE}
+      DYNAMODB_BATTERY_TABLE: ${self:provider.environment.DYNAMODB_BATTERY_TABLE}
     events:
-      - s3:
-          bucket: ${self:custom.inputBucket}
-          event: s3:ObjectCreated:*
+      - http:
+          path: /api/getdevicestate
+          method: GET
+          cors: true
+  alldevicestate:
+    handler: lib/auth.alldevicestate
+    environment:
+      DYNAMODB_TABLE: ${self:provider.environment.DYNAMODB_TABLE}
+      DYNAMODB_BATTERY_TABLE: ${self:provider.environment.DYNAMODB_BATTERY_TABLE}
+    events:
+      - http:
+          path: /api/alldevicestate
+          method: POST
+          cors: true
 
 resources:
   Resources:
@@ -61,27 +54,33 @@ resources:
       DeletionPolicy: Retain
       Properties:
         AttributeDefinitions:
-          -
-            AttributeName: filename
+          - AttributeName: serial_number
+            AttributeType: S
+          - AttributeName: created_date
             AttributeType: S
         KeySchema:
-          -
-            AttributeName: filename
+          - AttributeName: serial_number
             KeyType: HASH
+          - AttributeName: created_date
+            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: ${self:provider.environment.DYNAMODB_TABLE}
-        GlobalSecondaryIndexes:
-          - IndexName: email
-            KeySchema:
-              - AttributeName: filename
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-            ProvisionedThroughput:
-              ReadCapacityUnits: 1
-              WriteCapacityUnits: 1
+    BatteryDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: serial_number
+            AttributeType: S
+        KeySchema:
+          - AttributeName: serial_number
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_BATTERY_TABLE}
 
 plugins:
   - serverless-python-requirements
