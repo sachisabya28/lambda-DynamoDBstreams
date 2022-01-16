@@ -25,7 +25,7 @@ Default output format [None]: json
 ###### Installation Guide ######
 
 ```bash
-git clone https://github.com/sachisabya28/lambdastreams.git
+git clone https://github.com/sachisabya28/lambda-DynamoDBstreams.git
 npm install -g serverless
 sls plugin install -n serverless-python-requirements
 sls deploy 
