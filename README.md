@@ -1,7 +1,12 @@
 ## _AWS SERVERLESS_
 
 In order to implement serverless artitecture with AWS
-we are implementing RESTAPI using Lambda, DynamoDB, API GAteway, s3
+we are implementing RESTAPI using Lambda, DynamoDB, API GAteway, dynamodbStreams
+
+
+Retreive data from secondary table(batterydata) which stored whenever INSERT or MODIFY
+takes place in primary table(devicedata). 
+Update in batterydata is handled by lambda and dynamodb Streams.  
 
 ## IAM credentials
 *** 
